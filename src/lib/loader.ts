@@ -11,18 +11,22 @@ interface LoadResult {
 }
 
 export async function load(
-  url: URL,
+  url: string,
   context: LoadContext,
-  defaultLoad: (url: URL, context: LoadContext) => Promise<LoadResult>,
+  defaultLoad: (url: string, context: LoadContext) => Promise<LoadResult>,
 ): Promise<LoadResult> {
+  // console.log("PROCESSING:", url);
   const result = await defaultLoad(url, context);
+  // console.log("Source type:", typeof result.source);
+  // console.log("Source instanceof:", result.source instanceof Uint8Array);
 
   if (
-    !url.href.endsWith(".js") &&
-    !url.href.endsWith(".jsx") &&
-    !url.href.endsWith(".ts") &&
-    !url.href.endsWith(".tsx")
+    !url.endsWith(".js") &&
+    !url.endsWith(".jsx") &&
+    !url.endsWith(".ts") &&
+    !url.endsWith(".tsx")
   ) {
+    // console.log("Returning early", url);
     return result;
   }
 
@@ -30,22 +34,29 @@ export async function load(
     return result;
   }
 
-  const source = result.source.toString().trim();
+  const source = (
+    result.source instanceof Uint8Array
+      ? new TextDecoder().decode(result.source)
+      : result.source.toString()
+  ).trim();
+
   if (
     !source.startsWith("'use target'") &&
     !source.startsWith('"use target"')
   ) {
+    // console.log("Returning early not a target", url);
     return result;
   }
 
   const matches = source.matchAll(
-    /export( async)? function (\w+)(\([^)]*\)[\s\S]*?\})/g,
+    /export( async)? function (\w+)(\([^)]*\)(?:\s*{((?:[^{}]|{(?:[^{}]|{[^{}]*})*})*})))/g,
   );
   const transformedFunctions = [];
 
   for (const [fullMatch, isAsync, name, functionBody] of matches) {
+    // console.log("functionBody:", functionBody);
     const asyncStr = isAsync ? "async " : "";
-    const fileName = JSON.stringify(url.href);
+    const fileName = JSON.stringify(url);
     const targetName = JSON.stringify(name);
     const id = await makeId(fileName, targetName);
 
@@ -59,7 +70,7 @@ export async function load(
 
   let newCode = source.replace(
     /^['"]use target['"]/,
-    `import { registerTarget } from "@remix/targets";`,
+    `import { registerTarget } from "../../src/lib/targets.ts"`,
   );
 
   // Replace each function declaration with its transformed version
@@ -67,9 +78,14 @@ export async function load(
     newCode = newCode.replace(original, transformed);
   }
 
+  let buffer = new TextEncoder().encode(newCode + "\n\n");
+
+  // console.log("FINAL CODE:", url);
+  // console.log(newCode);
+
   return {
     ...result,
-    source: newCode,
+    source: buffer,
   };
 }
 

@@ -1,0 +1,30 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      '@mjackson/node-fetch-server':
+        specifier: ^0.5.0
+        version: 0.5.0
+      tiny-invariant:
+        specifier: ^1.3.3
+        version: 1.3.3
+
+packages:
+
+  '@mjackson/node-fetch-server@0.5.0':
+    resolution: {integrity: sha512-GZrkGuP3N7he0GdK9CCqpjabqsXjJa4tp0yKw973FoGAAOGE6WTcp3kcosRdeGYqtoFn7IEu84g3pItk4wRBFg==}
+
+  tiny-invariant@1.3.3:
+    resolution: {integrity: sha512-+FbBPE1o9QAYvviau/qC5SE3caw21q3xkvWKBtja5vgqOWIHHJ3ioaq1VPfn/Szqctz2bU/oYeKd9/z5BL+PVg==}
+
+snapshots:
+
+  '@mjackson/node-fetch-server@0.5.0': {}
+
+  tiny-invariant@1.3.3: {}

@@ -14,20 +14,23 @@ export async function MyOtherTarget() {
 `;
 
   let expected = `
-import { registerTarget } from "@remix/targets";;
-export const MyTarget = registerTarget("da1ca634c3f1991b39af0c738e1f96cd61ad05a9", function MyTarget({ foo }) {
+import { registerTarget } from "../../src/lib/targets.ts";
+export const MyTarget = registerTarget("cd855d99617b11648826538f9178f24474274688", function MyTarget({ foo }) {
   return "hello" + foo;
 })
-export const MyOtherTarget = registerTarget("b66914bb3d9ffd85cb8d0b50e93cf42a434b06ac", async function MyOtherTarget() {
+export const MyOtherTarget = registerTarget("044bb5ee42a58a73227d15ce7d8823b833039257", async function MyOtherTarget() {
   return "world";
 })
 `;
 
-  const result = await load(
-    new URL("test.js", import.meta.url),
-    { conditions: ["test"] },
-    async () => ({ source, format: "module" }),
-  );
+  const result = await load("test.js", { conditions: ["test"] }, async () => ({
+    source,
+    format: "module",
+  }));
 
-  assert.equal(result?.source?.toString().trim(), expected.trim());
+  assert.ok(result);
+  assert.ok(result.source);
+
+  let string = new TextDecoder().decode(result.source as Uint8Array);
+  assert.equal(string.trim(), expected.trim());
 });

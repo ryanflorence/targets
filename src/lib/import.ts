@@ -1,3 +1,3 @@
 import { register } from "node:module";
 
-register("./loader.js", { parentURL: import.meta.url });
+register("./loader.ts", { parentURL: import.meta.url });
